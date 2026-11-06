@@ -69,11 +69,15 @@
     currentStreamIndex = index % STREAMS.length;
     player.src = STREAMS[currentStreamIndex];
     player.load();
-    // Show which source is active
-    const sourceName = currentStreamIndex === 0 ? 'Official Radio.co' :
-                       currentStreamIndex === 1 || currentStreamIndex === 3 ? 'Zeno Mirror' :
-                       currentStreamIndex === 2 ? 'Voscast' : 'Backup';
-    trackTitle.textContent = `Jesus is Lord Radio • ${sourceName}`;
+    // Keep a clear station title; source is secondary
+    trackTitle.textContent = 'Jesus is Lord Radio — Live';
+    const meta = document.getElementById('songMeta');
+    if (meta) {
+      const sourceName = currentStreamIndex === 0 ? 'Official Stream' :
+                         currentStreamIndex === 1 || currentStreamIndex === 3 ? 'Zeno Mirror' :
+                         currentStreamIndex === 2 ? 'Voscast Mirror' : 'Backup Stream';
+      meta.textContent = sourceName + ' · 105.3 / 105.9 FM';
+    }
   }
 
   function play() {
@@ -82,8 +86,10 @@
     if (p !== undefined) {
       p.then(() => {
         isPlaying = true;
-        btnPlay.textContent = '❚❚';
+        btnPlay.innerHTML = '❚❚';
+        btnPlay.setAttribute('aria-label', 'Pause');
         setStatus('Live • Streaming', 'ok');
+        trackTitle.textContent = 'Jesus is Lord Radio — Live';
         updateMediaSession();
         startVisualizer();
       }).catch(err => {
@@ -99,7 +105,8 @@
   function pause() {
     player.pause();
     isPlaying = false;
-    btnPlay.textContent = '▶';
+    btnPlay.innerHTML = '▶';
+    btnPlay.setAttribute('aria-label', 'Play');
     setStatus('Paused');
     stopVisualizer();
   }

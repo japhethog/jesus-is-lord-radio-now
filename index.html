@@ -622,6 +622,30 @@
       border: 1px solid rgba(52,211,153,0.25);
     }
 
+  
+    /* Stronger radio play button */
+    .btn-play {
+      width: 80px !important;
+      height: 80px !important;
+      font-size: 32px !important;
+      box-shadow: 0 8px 28px rgba(212, 175, 55, 0.5) !important;
+    }
+    .now-playing .title {
+      font-size: 1.15rem !important;
+      font-weight: 700 !important;
+      min-height: 1.4em;
+    }
+    .now-playing .label {
+      font-size: 0.7rem !important;
+    }
+    /* Splash logo bigger and cleaner */
+    #splash .splash-logo {
+      width: 160px !important;
+      height: 160px !important;
+      border-width: 5px !important;
+      box-shadow: 0 0 0 12px rgba(212,175,55,0.18), 0 24px 60px rgba(0,0,0,0.55) !important;
+    }
+
   </style>
 </head>
 <body>
@@ -629,11 +653,11 @@
   <!-- Splash Screen -->
   <div id="splash">
     <div class="splash-logo">
-      <img src="logo.webp" alt="Jesus is Lord Radio" />
+      <img src="logo.webp" alt="Jesus is Lord Radio Logo" width="160" height="160" />
     </div>
     <h2>Jesus is Lord Radio</h2>
-    <div class="splash-tag">Preparing the Way for the Messiah</div>
-    <div class="splash-freq">105.3 · 105.9 FM</div>
+    <div class="splash-tag">Preparing the Way for the Return of the Messiah</div>
+    <div class="splash-freq">105.3 · 105.9 FM · Nakuru</div>
     <div class="loader"></div>
   </div>
 
@@ -655,7 +679,8 @@
       </div>
       <div class="now-playing">
         <div class="label">Now Playing</div>
-        <div class="title" id="trackTitle">Jesus is Lord Radio</div>
+        <div class="title" id="trackTitle">Jesus is Lord Radio — Live</div>
+        <div id="songMeta" style="font-size:0.78rem;color:var(--muted);margin-top:4px;min-height:1.2em;"></div>
       </div>
       <canvas class="visualizer" id="visualizer"></canvas>
       <div class="controls">
