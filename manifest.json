@@ -1,11 +1,11 @@
 {
   "name": "Jesus is Lord Radio",
   "short_name": "JIL Radio",
-  "description": "Preparing the Way for the Return of the Messiah – Live from Nakuru, Kenya",
+  "description": "Preparing the Way for the Return of the Messiah – Live from Nakuru, Kenya (105.3 / 105.9 FM)",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#070f1c",
-  "theme_color": "#0a1628",
+  "background_color": "#060d18",
+  "theme_color": "#060d18",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -16,5 +16,6 @@
     }
   ],
   "categories": ["music", "entertainment", "lifestyle"],
-  "lang": "en"
+  "lang": "en",
+  "dir": "ltr"
 }

@@ -517,21 +517,142 @@
     body.light .visualizer {
       background: rgba(0,0,0,0.05);
     }
+  
+    /* ========== SPLASH SCREEN ========== */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: linear-gradient(160deg, #0a1422 0%, #060d18 50%, #0c1a2e 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.7s ease, visibility 0.7s;
+    }
+    #splash.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    #splash .splash-logo {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 4px solid #d4af37;
+      box-shadow: 0 0 0 10px rgba(212,175,55,0.15), 0 20px 50px rgba(0,0,0,0.5);
+      overflow: hidden;
+      background: #fff;
+      margin-bottom: 24px;
+      animation: splashIn 0.8s ease-out;
+    }
+    #splash .splash-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    #splash h2 {
+      color: #f0d878;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      animation: splashIn 0.8s ease-out 0.15s both;
+    }
+    #splash .splash-tag {
+      color: #8ba3c7;
+      font-size: 0.85rem;
+      animation: splashIn 0.8s ease-out 0.3s both;
+    }
+    #splash .splash-freq {
+      margin-top: 18px;
+      font-size: 0.95rem;
+      color: #d4af37;
+      font-weight: 600;
+      letter-spacing: 1px;
+      animation: splashIn 0.8s ease-out 0.4s both;
+    }
+    #splash .loader {
+      margin-top: 28px;
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(212,175,55,0.2);
+      border-top-color: #d4af37;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes splashIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Radio frequency display */
+    .freq-display {
+      text-align: center;
+      margin: 4px 0 12px;
+      font-family: "Courier New", monospace;
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 2px;
+      text-shadow: 0 0 20px rgba(212,175,55,0.35);
+    }
+    .freq-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .on-air {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(52,211,153,0.12);
+      color: var(--success);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(52,211,153,0.25);
+    }
+
   </style>
 </head>
 <body>
+
+  <!-- Splash Screen -->
+  <div id="splash">
+    <div class="splash-logo">
+      <img src="logo.webp" alt="Jesus is Lord Radio" />
+    </div>
+    <h2>Jesus is Lord Radio</h2>
+    <div class="splash-tag">Preparing the Way for the Messiah</div>
+    <div class="splash-freq">105.3 · 105.9 FM</div>
+    <div class="loader"></div>
+  </div>
+
   <header class="header">
     <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle theme">☀️</button>
     <div class="logo-wrap">
-      <img src="logo.webp" alt="Jesus is Lord Radio" width="128" height="128" />
+      <img src="logo.webp" alt="Jesus is Lord Radio" width="110" height="110" />
     </div>
     <h1>Jesus is Lord Radio</h1>
     <p class="tagline">Preparing the Way for the Return of the Messiah</p>
-    <div class="live-badge"><span class="live-dot"></span> LIVE • 105.3 / 105.9 FM Nakuru</div>
   </header>
 
   <main class="main">
     <div class="player-card">
+      <div style="text-align:center;">
+        <div class="on-air"><span class="live-dot"></span> ON AIR</div>
+        <div class="freq-label">Nakuru, Kenya</div>
+        <div class="freq-display">105.3 · 105.9 FM</div>
+      </div>
       <div class="now-playing">
         <div class="label">Now Playing</div>
         <div class="title" id="trackTitle">Jesus is Lord Radio</div>

@@ -374,6 +374,18 @@
     }
   });
 
+  // ---------- Splash Screen ----------
+  const splash = document.getElementById('splash');
+  function hideSplash() {
+    if (splash) {
+      splash.classList.add('hide');
+      setTimeout(() => { if (splash) splash.remove(); }, 800);
+    }
+  }
+  // Hide after short branding moment or when audio starts
+  setTimeout(hideSplash, 2200);
+  player.addEventListener('playing', hideSplash, { once: true });
+
   // Initial load
   loadStream(0);
   player.volume = parseFloat(volume.value);
