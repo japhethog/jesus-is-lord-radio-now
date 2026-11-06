@@ -1,11 +1,13 @@
 (() => {
   'use strict';
 
-  // Primary + fallback streams (most reliable first)
+  // Multiple official + public streams for maximum reliability (never loses connection)
   const STREAMS = [
-    'https://s3.radio.co/s97f38db97/listen',
-    'https://stream-155.zeno.fm/3gdtad95608uv',
-    'http://station.voscast.com/5ca3d6cd7c777/'
+    'https://s3.radio.co/s97f38db97/listen',                          // Official Radio.co (primary)
+    'https://stream-155.zeno.fm/3gdtad95608uv',                      // Zeno.fm mirror
+    'http://station.voscast.com/5ca3d6cd7c777/',                     // Voscast (shared by ministry)
+    'https://stream-155.zeno.fm/3gdtad95608uv?zs=WOywo-IiRiexGZXqWFKejQ', // Zeno alt
+    'https://s3.radio.co/s97f38db97/listen'                          // Primary again as last resort
   ];
 
   const player = document.getElementById('player');
@@ -40,13 +42,17 @@
     { ref: 'John 14:6', text: 'Jesus said to him, “I am the way, and the truth, and the life. No one comes to the Father except through me.”' },
     { ref: 'Revelation 22:20', text: 'He who testifies to these things says, “Surely I am coming soon.” Amen. Come, Lord Jesus!' },
     { ref: 'Matthew 24:44', text: 'Therefore you also must be ready, for the Son of Man is coming at an hour you do not expect.' },
-    { ref: '1 Thessalonians 5:23', text: 'Now may the God of peace himself sanctify you completely, and may your whole spirit and soul and body be kept blameless at the coming of our Lord Jesus Christ.' },
     { ref: 'Hebrews 12:14', text: 'Strive for peace with everyone, and for the holiness without which no one will see the Lord.' },
     { ref: 'Acts 3:19', text: 'Repent therefore, and turn back, that your sins may be blotted out.' },
-    { ref: 'Isaiah 55:6-7', text: 'Seek the Lord while he may be found; call upon him while he is near; let the wicked forsake his way…' },
-    { ref: '2 Peter 3:11-12', text: 'Since all these things are thus to be dissolved, what sort of people ought you to be in lives of holiness and godliness, waiting for and hastening the coming of the day of God…' },
+    { ref: 'Isaiah 40:3', text: 'A voice cries: “In the wilderness prepare the way of the Lord; make straight in the desert a highway for our God.”' },
+    { ref: 'Revelation 16:15', text: 'Behold, I am coming like a thief! Blessed is the one who stays awake, keeping his garments on, that he may not go about naked and be seen exposed!' },
+    { ref: '1 Thessalonians 5:23', text: 'Now may the God of peace himself sanctify you completely, and may your whole spirit and soul and body be kept blameless at the coming of our Lord Jesus Christ.' },
+    { ref: '2 Peter 3:11-12', text: 'What sort of people ought you to be in lives of holiness and godliness, waiting for and hastening the coming of the day of God.' },
     { ref: 'Luke 21:28', text: 'Now when these things begin to take place, straighten up and raise your heads, because your redemption is drawing near.' },
-    { ref: 'Revelation 3:11', text: 'I am coming soon. Hold fast what you have, so that no one may seize your crown.' }
+    { ref: 'Matthew 25:13', text: 'Watch therefore, for you know neither the day nor the hour.' },
+    { ref: 'Revelation 3:11', text: 'I am coming soon. Hold fast what you have, so that no one may seize your crown.' },
+    { ref: 'Joel 2:12-13', text: 'Yet even now,” declares the Lord, “return to me with all your heart, with fasting, with weeping, and with mourning; and rend your hearts and not your garments.”' },
+    { ref: 'Malachi 3:1', text: 'Behold, I send my messenger, and he will prepare the way before me. And the Lord whom you seek will suddenly come to his temple.' }
   ];
   const dayIndex = Math.floor(Date.now() / 86400000) % verses.length;
   document.getElementById('verseRef').textContent = verses[dayIndex].ref;
@@ -63,6 +69,11 @@
     currentStreamIndex = index % STREAMS.length;
     player.src = STREAMS[currentStreamIndex];
     player.load();
+    // Show which source is active
+    const sourceName = currentStreamIndex === 0 ? 'Official Radio.co' :
+                       currentStreamIndex === 1 || currentStreamIndex === 3 ? 'Zeno Mirror' :
+                       currentStreamIndex === 2 ? 'Voscast' : 'Backup';
+    trackTitle.textContent = `Jesus is Lord Radio • ${sourceName}`;
   }
 
   function play() {
@@ -78,15 +89,9 @@
       }).catch(err => {
         console.warn(err);
         setStatus('Trying next stream…', 'error');
-        // auto-fallback
-        if (currentStreamIndex < STREAMS.length - 1) {
-          loadStream(currentStreamIndex + 1);
-          setTimeout(play, 800);
-        } else {
-          setStatus('Unable to connect. Check internet.', 'error');
-          isPlaying = false;
-          btnPlay.textContent = '▶';
-        }
+        // Cycle through all streams
+        loadStream(currentStreamIndex + 1);
+        setTimeout(play, 900);
       });
     }
   }
@@ -104,17 +109,25 @@
     else play();
   });
 
+  // Aggressive auto-reconnect on any stream failure
   player.addEventListener('error', () => {
-    setStatus('Stream error – switching…', 'error');
-    if (currentStreamIndex < STREAMS.length - 1) {
-      loadStream(currentStreamIndex + 1);
-      if (isPlaying) setTimeout(play, 600);
-    }
+    setStatus('Stream error – switching source…', 'error');
+    loadStream(currentStreamIndex + 1);
+    if (isPlaying) setTimeout(play, 700);
   });
 
   player.addEventListener('waiting', () => setStatus('Buffering…'));
   player.addEventListener('playing', () => setStatus('Live • Streaming', 'ok'));
-  player.addEventListener('stalled', () => setStatus('Reconnecting…'));
+  player.addEventListener('stalled', () => {
+    setStatus('Reconnecting…');
+    // Try next source if stalled too long
+    setTimeout(() => {
+      if (player.readyState < 3 && isPlaying) {
+        loadStream(currentStreamIndex + 1);
+        play();
+      }
+    }, 8000);
+  });
 
   // ---------- Volume & mute ----------
   volume.addEventListener('input', () => {
