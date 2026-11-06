@@ -353,10 +353,97 @@
       border-top: 1px solid rgba(201,162,39,0.2);
       box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
     }
+
+    /* Prayer + Testimony cards */
+    .action-card {
+      width: 100%;
+      max-width: 380px;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .action-card h3 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .action-card textarea, .action-card input {
+      width: 100%;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .action-card textarea { min-height: 70px; }
+    .action-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .action-btns button {
+      flex: 1;
+      min-width: 110px;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.82rem;
+      cursor: pointer;
+      background: var(--accent);
+      color: #0a1628;
+    }
+    .action-btns button.secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+    }
+    .theme-toggle {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+      font-size: 1.1rem;
+      cursor: pointer;
+      z-index: 20;
+    }
+
+    /* Light theme overrides */
+    body.light {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #1a2332;
+      --muted: #5a6a80;
+      --accent: #b08d1a;
+      --accent2: #8a6d12;
+      background: radial-gradient(ellipse at top, #e8eef6 0%, #f4f6f9 60%);
+    }
+    body.light .logo-wrap { box-shadow: 0 0 0 4px var(--accent), 0 8px 24px rgba(0,0,0,0.12); }
+    body.light .player-card, body.light .tool-card, body.light .action-card, body.light .verse-card {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border-color: rgba(0,0,0,0.06);
+    }
+    body.light .btn-play { color: #fff; }
+    body.light .chip { background: rgba(0,0,0,0.06); color: var(--text); }
+    body.light .chip.active { background: var(--accent); color: #fff; }
+    body.light .link-btn { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.08); color: var(--text); }
+    body.light .ad-container { background: rgba(0,0,0,0.03); }
   </style>
 </head>
 <body>
   <header class="header">
+    <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle theme">☀️</button>
     <div class="logo-wrap">
       <img src="logo.webp" alt="Jesus is Lord Radio" width="128" height="128" />
     </div>
@@ -437,6 +524,28 @@
         • Prophetic updates &amp; end-time messages<br>
         • Global revival services broadcast live
       </p>
+    </div>
+
+    <!-- Prayer Request -->
+    <div class="action-card">
+      <h3>Prayer Request</h3>
+      <textarea id="prayerText" placeholder="Write your prayer request here… The Lord hears."></textarea>
+      <div class="action-btns">
+        <button id="btnPray">Send Prayer</button>
+        <button class="secondary" id="btnClearPrayer">Clear</button>
+      </div>
+      <div id="prayerStatus" style="font-size:0.75rem;color:var(--muted);margin-top:8px;"></div>
+    </div>
+
+    <!-- Share Testimony -->
+    <div class="action-card">
+      <h3>Share Testimony</h3>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px;line-height:1.4;">
+        Has the Lord blessed you while listening to Jesus is Lord Radio? Share your testimony and encourage others.
+      </p>
+      <div class="action-btns">
+        <button id="btnTestimony">Share Testimony</button>
+      </div>
     </div>
 
     <div class="links">

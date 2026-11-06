@@ -309,6 +309,71 @@
     navigator.serviceWorker.register('sw.js').catch(console.warn);
   }
 
+  // ---------- Theme Toggle ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('jil-theme');
+  if (savedTheme === 'light') {
+    document.body.classList.add('light');
+    themeToggle.textContent = '🌙';
+  }
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('light');
+    const isLight = document.body.classList.contains('light');
+    themeToggle.textContent = isLight ? '🌙' : '☀️';
+    localStorage.setItem('jil-theme', isLight ? 'light' : 'dark');
+  });
+
+  // ---------- Prayer Request ----------
+  const prayerText = document.getElementById('prayerText');
+  const btnPray = document.getElementById('btnPray');
+  const btnClearPrayer = document.getElementById('btnClearPrayer');
+  const prayerStatus = document.getElementById('prayerStatus');
+
+  btnPray.addEventListener('click', () => {
+    const text = (prayerText.value || '').trim();
+    if (!text) {
+      prayerStatus.textContent = 'Please write your prayer request first.';
+      return;
+    }
+    // Open email client with the request (user can send to ministry)
+    const subject = encodeURIComponent('Prayer Request from Jesus is Lord Radio App');
+    const body = encodeURIComponent('Prayer Request:\n\n' + text + '\n\n---\nSent via the Jesus is Lord Radio PWA\nPreparing the Way for the Return of the Messiah');
+    window.location.href = 'mailto:jesusislord.fmradio@gmail.com?subject=' + subject + '&body=' + body;
+    prayerStatus.textContent = 'Opening email… May the Lord hear your prayer.';
+    // Also save locally as backup
+    try {
+      const saved = JSON.parse(localStorage.getItem('jil-prayers') || '[]');
+      saved.push({ text, date: new Date().toISOString() });
+      localStorage.setItem('jil-prayers', JSON.stringify(saved.slice(-20)));
+    } catch (_) {}
+  });
+
+  btnClearPrayer.addEventListener('click', () => {
+    prayerText.value = '';
+    prayerStatus.textContent = '';
+  });
+
+  // ---------- Share Testimony ----------
+  document.getElementById('btnTestimony').addEventListener('click', async () => {
+    const data = {
+      title: 'My Testimony – Jesus is Lord Radio',
+      text: 'I have been blessed listening to Jesus is Lord Radio (Preparing the Way for the Return of the Messiah). The teachings on repentance and holiness have strengthened my walk with the Lord.\n\nListen live: https://japhethog.github.io/jesus-is-lord-radio-now/\n\n#JesusIsLord #PrepareTheWay',
+      url: 'https://japhethog.github.io/jesus-is-lord-radio-now/'
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(data);
+      } catch (_) {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(data.text);
+        setStatus('Testimony text copied – paste it anywhere to share!', 'ok');
+      } catch (_) {
+        setStatus('Could not share automatically. Please copy manually.', 'error');
+      }
+    }
+  });
+
   // Initial load
   loadStream(0);
   player.volume = parseFloat(volume.value);
