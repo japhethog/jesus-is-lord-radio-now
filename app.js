@@ -317,12 +317,14 @@
   }
 
 
-  // ---------- Record live stream ----------
+  // ---------- Record live stream as MP3 ----------
   const btnRecord = document.getElementById('btnRecord');
   const recordStatus = document.getElementById('recordStatus');
-  let mediaRecorder = null;
-  let recordedChunks = [];
   let isRecording = false;
+  let mp3Encoder = null;
+  let mp3Data = [];
+  let recProcessor = null;
+  let recSampleRate = 44100;
 
   function updateRecordUI(recording) {
     isRecording = recording;
@@ -332,93 +334,114 @@
       btnRecord.textContent = '⏹';
       btnRecord.title = 'Stop recording';
       btnRecord.setAttribute('aria-label', 'Stop recording');
-      if (recordStatus) recordStatus.textContent = 'Recording live stream…';
+      if (recordStatus) recordStatus.textContent = 'Recording MP3…';
     } else {
       btnRecord.classList.remove('recording');
       btnRecord.textContent = '⏺';
-      btnRecord.title = 'Record live stream';
+      btnRecord.title = 'Record live stream (MP3)';
       btnRecord.setAttribute('aria-label', 'Record');
     }
   }
 
+  function floatTo16BitPCM(input) {
+    const output = new Int16Array(input.length);
+    for (let i = 0; i < input.length; i++) {
+      let s = Math.max(-1, Math.min(1, input[i]));
+      output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+    return output;
+  }
+
+  async function ensureAudioGraph() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+    if (!sourceNode) {
+      sourceNode = audioCtx.createMediaElementSource(player);
+      sourceNode.connect(audioCtx.destination);
+    }
+    return audioCtx;
+  }
+
   async function startRecording() {
+    if (typeof lamejs === 'undefined') {
+      if (recordStatus) recordStatus.textContent = 'MP3 encoder not loaded. Check internet.';
+      return;
+    }
     if (!player.src || player.paused) {
-      // Auto-start playback so we have audio to record
       play();
       await new Promise(r => setTimeout(r, 1200));
     }
     try {
-      let stream = null;
-      // Preferred: capture from the audio element (Chrome / Android Chrome)
-      if (typeof player.captureStream === 'function') {
-        stream = player.captureStream();
-      } else if (typeof player.mozCaptureStream === 'function') {
-        stream = player.mozCaptureStream();
-      }
+      const ctx = await ensureAudioGraph();
+      recSampleRate = ctx.sampleRate;
+      mp3Data = [];
 
-      if (!stream || stream.getAudioTracks().length === 0) {
-        // Fallback via Web Audio API
-        if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') await audioCtx.resume();
-        if (!sourceNode) {
-          sourceNode = audioCtx.createMediaElementSource(player);
-          sourceNode.connect(audioCtx.destination);
-        }
-        const dest = audioCtx.createMediaStreamDestination();
-        sourceNode.connect(dest);
-        stream = dest.stream;
-      }
+      // LAME MP3 encoder: mono, 128 kbps
+      mp3Encoder = new lamejs.Mp3Encoder(1, recSampleRate, 128);
 
-      if (!stream || stream.getAudioTracks().length === 0) {
-        if (recordStatus) recordStatus.textContent = 'Recording not supported in this browser.';
-        return;
-      }
+      // ScriptProcessor captures PCM from the live stream
+      const bufferSize = 4096;
+      recProcessor = ctx.createScriptProcessor(bufferSize, 1, 1);
+      sourceNode.connect(recProcessor);
+      recProcessor.connect(ctx.destination);
 
-      recordedChunks = [];
-      const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : (MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '');
-
-      mediaRecorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+      recProcessor.onaudioprocess = (e) => {
+        if (!isRecording || !mp3Encoder) return;
+        const input = e.inputBuffer.getChannelData(0);
+        const samples = floatTo16BitPCM(input);
+        const mp3buf = mp3Encoder.encodeBuffer(samples);
+        if (mp3buf.length > 0) mp3Data.push(mp3buf);
       };
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-        a.href = url;
-        a.download = 'JIL-Radio-' + stamp + '.webm';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        if (recordStatus) recordStatus.textContent = 'Recording saved.';
-        setTimeout(() => { if (recordStatus && !isRecording) recordStatus.textContent = ''; }, 4000);
-        updateRecordUI(false);
-      };
-
-      mediaRecorder.start(1000); // timeslice for reliability
       updateRecordUI(true);
-      setStatus('Recording…', 'ok');
+      setStatus('Recording MP3…', 'ok');
     } catch (err) {
       console.warn(err);
-      if (recordStatus) recordStatus.textContent = 'Could not start recording.';
+      if (recordStatus) recordStatus.textContent = 'Could not start MP3 recording.';
       updateRecordUI(false);
     }
   }
 
   function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
-    } else {
+    if (!isRecording) {
       updateRecordUI(false);
+      return;
     }
+    try {
+      if (recProcessor) {
+        recProcessor.onaudioprocess = null;
+        try { recProcessor.disconnect(); } catch (_) {}
+        recProcessor = null;
+      }
+      if (mp3Encoder) {
+        const end = mp3Encoder.flush();
+        if (end.length > 0) mp3Data.push(end);
+        mp3Encoder = null;
+      }
+
+      // Build MP3 blob and download
+      const blob = new Blob(mp3Data, { type: 'audio/mpeg' });
+      mp3Data = [];
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      a.href = url;
+      a.download = 'JIL-Radio-' + stamp + '.mp3';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      if (recordStatus) recordStatus.textContent = 'MP3 saved to downloads.';
+      setTimeout(() => { if (recordStatus && !isRecording) recordStatus.textContent = ''; }, 4500);
+      setStatus('Recording saved (MP3)', 'ok');
+    } catch (err) {
+      console.warn(err);
+      if (recordStatus) recordStatus.textContent = 'Error saving MP3.';
+    }
+    updateRecordUI(false);
   }
 
   if (btnRecord) {
