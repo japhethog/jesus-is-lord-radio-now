@@ -646,6 +646,32 @@
       box-shadow: 0 0 0 12px rgba(212,175,55,0.18), 0 24px 60px rgba(0,0,0,0.55) !important;
     }
 
+  
+    .back-btn {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .back-btn:active { transform: scale(0.92); }
+    body.light .back-btn {
+      background: rgba(0,0,0,0.05);
+      border-color: rgba(0,0,0,0.08);
+    }
+
   </style>
 </head>
 <body>
@@ -662,7 +688,8 @@
   </div>
 
   <header class="header">
-    <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle theme">☀️</button>
+    <button class="back-btn" id="btnBack" title="Back" aria-label="Go back">←</button>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark / light mode" aria-label="Toggle theme">☀️</button>
     <div class="logo-wrap">
       <img src="logo.webp" alt="Jesus is Lord Radio" width="110" height="110" />
     </div>

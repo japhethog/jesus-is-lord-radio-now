@@ -316,18 +316,48 @@
     navigator.serviceWorker.register('sw.js').catch(console.warn);
   }
 
-  // ---------- Theme Toggle ----------
+  // ---------- Theme Toggle (Dark / Light) ----------
   const themeToggle = document.getElementById('themeToggle');
   const savedTheme = localStorage.getItem('jil-theme');
   if (savedTheme === 'light') {
     document.body.classList.add('light');
-    themeToggle.textContent = '🌙';
+    if (themeToggle) themeToggle.textContent = '🌙';
   }
-  themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('light');
-    const isLight = document.body.classList.contains('light');
-    themeToggle.textContent = isLight ? '🌙' : '☀️';
-    localStorage.setItem('jil-theme', isLight ? 'light' : 'dark');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      const isLight = document.body.classList.contains('light');
+      themeToggle.textContent = isLight ? '🌙' : '☀️';
+      localStorage.setItem('jil-theme', isLight ? 'light' : 'dark');
+    });
+  }
+
+  // ---------- Back button ----------
+  const btnBack = document.getElementById('btnBack');
+  function goBack() {
+    // Prefer native Android WebView bridge if present
+    if (window.AndroidBridge && typeof window.AndroidBridge.goBack === 'function') {
+      window.AndroidBridge.goBack();
+      return;
+    }
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Standalone PWA / no history — minimize impact
+      setStatus('You are on the home screen of the radio', 'ok');
+    }
+  }
+  if (btnBack) btnBack.addEventListener('click', goBack);
+
+  // Android hardware back button support (when running inside WebView)
+  document.addEventListener('backbutton', function (e) {
+    e.preventDefault();
+    goBack();
+  }, false);
+
+  // Also listen for popstate / visibility for better WebView behavior
+  window.addEventListener('popstate', () => {
+    // allow normal history navigation
   });
 
   // ---------- Prayer Request ----------
