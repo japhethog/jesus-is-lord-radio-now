@@ -86,8 +86,8 @@
     if (p !== undefined) {
       p.then(() => {
         isPlaying = true;
-        btnPlay.innerHTML = '❚❚';
-        btnPlay.setAttribute('aria-label', 'Pause');
+        btnPlay.innerHTML = '⏹';
+        btnPlay.setAttribute('aria-label', 'Stop');
         setStatus('Live • Streaming', 'ok');
         trackTitle.textContent = 'Jesus is Lord Radio — Live';
         updateMediaSession();
@@ -107,7 +107,7 @@
     isPlaying = false;
     btnPlay.innerHTML = '▶';
     btnPlay.setAttribute('aria-label', 'Play');
-    setStatus('Paused');
+    setStatus('Stopped');
     stopVisualizer();
   }
 
@@ -315,6 +315,119 @@
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(console.warn);
   }
+
+
+  // ---------- Record live stream ----------
+  const btnRecord = document.getElementById('btnRecord');
+  const recordStatus = document.getElementById('recordStatus');
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let isRecording = false;
+
+  function updateRecordUI(recording) {
+    isRecording = recording;
+    if (!btnRecord) return;
+    if (recording) {
+      btnRecord.classList.add('recording');
+      btnRecord.textContent = '⏹';
+      btnRecord.title = 'Stop recording';
+      btnRecord.setAttribute('aria-label', 'Stop recording');
+      if (recordStatus) recordStatus.textContent = 'Recording live stream…';
+    } else {
+      btnRecord.classList.remove('recording');
+      btnRecord.textContent = '⏺';
+      btnRecord.title = 'Record live stream';
+      btnRecord.setAttribute('aria-label', 'Record');
+    }
+  }
+
+  async function startRecording() {
+    if (!player.src || player.paused) {
+      // Auto-start playback so we have audio to record
+      play();
+      await new Promise(r => setTimeout(r, 1200));
+    }
+    try {
+      let stream = null;
+      // Preferred: capture from the audio element (Chrome / Android Chrome)
+      if (typeof player.captureStream === 'function') {
+        stream = player.captureStream();
+      } else if (typeof player.mozCaptureStream === 'function') {
+        stream = player.mozCaptureStream();
+      }
+
+      if (!stream || stream.getAudioTracks().length === 0) {
+        // Fallback via Web Audio API
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') await audioCtx.resume();
+        if (!sourceNode) {
+          sourceNode = audioCtx.createMediaElementSource(player);
+          sourceNode.connect(audioCtx.destination);
+        }
+        const dest = audioCtx.createMediaStreamDestination();
+        sourceNode.connect(dest);
+        stream = dest.stream;
+      }
+
+      if (!stream || stream.getAudioTracks().length === 0) {
+        if (recordStatus) recordStatus.textContent = 'Recording not supported in this browser.';
+        return;
+      }
+
+      recordedChunks = [];
+      const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : (MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '');
+
+      mediaRecorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.href = url;
+        a.download = 'JIL-Radio-' + stamp + '.webm';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        if (recordStatus) recordStatus.textContent = 'Recording saved.';
+        setTimeout(() => { if (recordStatus && !isRecording) recordStatus.textContent = ''; }, 4000);
+        updateRecordUI(false);
+      };
+
+      mediaRecorder.start(1000); // timeslice for reliability
+      updateRecordUI(true);
+      setStatus('Recording…', 'ok');
+    } catch (err) {
+      console.warn(err);
+      if (recordStatus) recordStatus.textContent = 'Could not start recording.';
+      updateRecordUI(false);
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    } else {
+      updateRecordUI(false);
+    }
+  }
+
+  if (btnRecord) {
+    btnRecord.addEventListener('click', () => {
+      if (isRecording) stopRecording();
+      else startRecording();
+    });
+  }
+
 
   // ---------- Theme Toggle (Dark / Light) ----------
   const themeToggle = document.getElementById('themeToggle');
