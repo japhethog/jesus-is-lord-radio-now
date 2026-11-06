@@ -11,6 +11,12 @@
   <link rel="apple-touch-icon" href="logo.webp" />
   <link rel="icon" type="image/webp" href="logo.webp" />
   <title>Jesus is Lord Radio</title>
+
+  <!-- Google AdSense -->
+  <!-- Replace ca-pub-XXXXXXXXXXXXXXXX with your real AdSense Publisher ID after approval -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+     crossorigin="anonymous"></script>
+
   <style>
     :root {
       --bg: #070f1c;
@@ -316,6 +322,37 @@
       font-size: 0.85rem;
     }
     .hidden { display: none !important; }
+
+    /* AdSense containers */
+    .ad-container {
+      width: 100%;
+      max-width: 380px;
+      margin: 4px auto;
+      text-align: center;
+      min-height: 50px;
+      overflow: hidden;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+    }
+    .ad-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+      opacity: 0.7;
+    }
+    .sticky-ad {
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      background: var(--bg);
+      padding: 8px 12px 12px;
+      border-top: 1px solid rgba(201,162,39,0.2);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    }
   </style>
 </head>
 <body>
@@ -346,6 +383,20 @@
         <span style="font-size:0.8rem">🔊</span>
       </div>
       <div class="status" id="status">Ready to play</div>
+    </div>
+
+    <!-- Ad Unit 1: Responsive banner after player -->
+    <div class="ad-container">
+      <div class="ad-label">Advertisement</div>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="1234567890"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+           (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
     </div>
 
     <div class="tools">
@@ -380,6 +431,20 @@
       <a class="link-btn" href="https://www.jesusislordradio.info/" target="_blank" rel="noopener">Official Site</a>
       <a class="link-btn" href="https://x.com/JIL_Radio" target="_blank" rel="noopener">@JIL_Radio</a>
       <a class="link-btn" href="https://play.google.com/store/apps/details?id=com.jesusislordradio.liveapp" target="_blank" rel="noopener">Official App</a>
+    </div>
+
+    <!-- Ad Unit 2: Another responsive unit before footer -->
+    <div class="ad-container" style="margin-top:12px;">
+      <div class="ad-label">Advertisement</div>
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="0987654321"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+           (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
     </div>
   </main>
 

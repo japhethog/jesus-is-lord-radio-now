@@ -41,6 +41,22 @@ HTTPS is required for full PWA + notification features.
 - X / Twitter: https://x.com/JIL_Radio
 - Official Google Play app: https://play.google.com/store/apps/details?id=com.jesusislordradio.liveapp
 
+## Monetization (Google AdSense)
+
+The app includes Google AdSense placeholders ready for activation.
+
+**To activate ads:**
+
+1. Create / log into a Google AdSense account → https://www.google.com/adsense/
+2. Add your site: `https://japhethog.github.io/jesus-is-lord-radio-now/`
+3. Wait for Google approval (usually a few days).
+4. Create two **Display ad units** (Responsive format).
+5. In `index.html` replace **all** occurrences of:
+   - `ca-pub-XXXXXXXXXXXXXXXX` → your real Publisher ID
+   - `data-ad-slot="1234567890"` and `data-ad-slot="0987654321"` → your real Ad Slot IDs
+
+Ads are placed non-intrusively (after the player + near the bottom) so they do not interrupt the listening experience.
+
 Stream source: radio.co (primary) + public fallbacks.
 
 Built for reliability and spiritual focus. May the Lord bless the listeners.
